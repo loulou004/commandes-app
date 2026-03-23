@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suivi Commandes</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#d4f24e">
@@ -20,21 +20,22 @@
     --accent3: #f24e7a;
     --text: #e8e8ec;
     --muted: #6b6b7a;
-    --radius: 12px;
+    --radius: 16px;
+    --fab-h: 72px;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    padding-bottom: 100px;
+    font-size: 16px;
+    padding-bottom: calc(var(--fab-h) + 32px);
   }
 
   header {
-    padding: 20px 16px 12px;
+    padding: 18px 20px 14px;
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
@@ -42,42 +43,62 @@
     z-index: 10;
   }
 
-  .header-top {
+  .header-row1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   h1 {
     font-family: 'Syne', sans-serif;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 800;
-    letter-spacing: -0.5px;
     color: var(--accent);
+    letter-spacing: -0.5px;
   }
+
+  .btn-csv {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-csv:active { background: rgba(212,242,78,0.08); }
 
   .stats {
     display: flex;
     gap: 8px;
-    font-size: 11px;
-    color: var(--muted);
+    margin-bottom: 14px;
   }
-
   .stat {
+    flex: 1;
     background: var(--surface);
     border: 1px solid var(--border);
-    padding: 4px 8px;
-    border-radius: 6px;
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
   }
-
-  .stat span { color: var(--text); font-weight: 500; }
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    display: block;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+  .stat:nth-child(2) .stat-val { color: var(--accent2); }
+  .stat:nth-child(3) .stat-val { color: var(--accent3); }
 
   .filters {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     overflow-x: auto;
-    padding-bottom: 2px;
     scrollbar-width: none;
   }
   .filters::-webkit-scrollbar { display: none; }
@@ -86,12 +107,13 @@
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--muted);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 14px;
     font-family: 'DM Mono', monospace;
     cursor: pointer;
     white-space: nowrap;
+    min-height: 44px;
     transition: all 0.15s;
   }
   .filter-btn.active {
@@ -102,178 +124,139 @@
   }
 
   .list {
-    padding: 12px 16px;
+    padding: 16px 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    font-size: 16px;
+    line-height: 2;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 14px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    position: relative;
     overflow: hidden;
+    position: relative;
   }
-  .card::before {
-    content: '';
+  .card-stripe {
     position: absolute;
     left: 0; top: 0; bottom: 0;
-    width: 3px;
+    width: 4px;
     background: var(--border);
     transition: background 0.2s;
   }
-  .card.all-done::before { background: var(--accent2); }
-  .card.partial::before { background: var(--accent); }
+  .card.all-done .card-stripe { background: var(--accent2); }
+  .card.partial .card-stripe  { background: var(--accent); }
+
+  .card-body { padding: 16px 16px 14px 20px; }
 
   .card-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
   }
 
   .card-name {
     font-family: 'Syne', sans-serif;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 18px;
     color: var(--text);
     flex: 1;
-    padding-right: 8px;
+    padding-right: 10px;
+    line-height: 1.2;
   }
-
-  .card-meta {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .card-amount {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--accent);
-    white-space: nowrap;
-  }
+  .card-meta { font-size: 13px; color: var(--muted); margin-top: 5px; }
+  .card-amount { font-size: 20px; font-weight: 500; color: var(--accent); white-space: nowrap; }
 
   .badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
   }
 
   .badge {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    border: 1px solid var(--border);
+    justify-content: center;
+    gap: 5px;
+    padding: 12px 6px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
     background: var(--bg);
     color: var(--muted);
     cursor: pointer;
-    transition: all 0.15s;
     user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    min-height: 38px;
+    min-height: 64px;
+    transition: all 0.15s;
   }
-  .badge.on {
-    border-color: currentColor;
-  }
+  .badge-icon { font-size: 22px; line-height: 1; }
+  .badge-label { font-size: 12px; font-family: 'DM Mono', monospace; }
+
+  .badge.on { border-color: currentColor; }
   .badge.on.facture { color: #7eb8f7; background: rgba(126,184,247,0.08); }
   .badge.on.paye    { color: var(--accent2); background: rgba(78,242,160,0.08); }
-  .badge.on.livre   { color: var(--accent); background: rgba(212,242,78,0.08); }
-
-  .badge-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.5;
-  }
-  .badge.on .badge-dot { opacity: 1; }
+  .badge.on.livre   { color: var(--accent);  background: rgba(212,242,78,0.08); }
 
   .card-actions {
     display: flex;
-    gap: 6px;
-    margin-top: 10px;
-    padding-top: 10px;
     border-top: 1px solid var(--border);
   }
-
   .btn-edit, .btn-delete {
+    flex: 1;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 5px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
+    font-size: 14px;
+    padding: 15px;
+    border: none;
+    background: transparent;
     cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-edit { background: var(--bg); color: var(--muted); }
-  .btn-edit:active { color: var(--text); }
-  .btn-delete { background: var(--bg); color: var(--accent3); border-color: rgba(242,78,122,0.3); margin-left: auto; }
-  .btn-delete:active { background: rgba(242,78,122,0.1); }
-
-  .empty {
-    text-align: center;
     color: var(--muted);
-    padding: 48px 16px;
-    font-size: 13px;
+    transition: background 0.15s;
   }
-  .empty-icon { font-size: 36px; margin-bottom: 12px; }
-
-  /* FAB */
-  .btn-csv {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--accent);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .btn-csv:active { background: rgba(212,242,78,0.08); }
+  .btn-edit:active   { background: rgba(255,255,255,0.04); color: var(--text); }
+  .btn-delete        { color: var(--accent3); border-left: 1px solid var(--border); }
+  .btn-delete:active { background: rgba(242,78,122,0.08); }
 
   .fab {
     position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 20px;
+    right: 20px;
+    height: var(--fab-h);
     background: var(--accent);
     color: #0f0f11;
     border: none;
-    height: 58px;
-    padding: 0 36px;
-    border-radius: 30px;
-    font-size: 16px;
-    font-weight: 700;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: 800;
     font-family: 'Syne', sans-serif;
-    letter-spacing: 0.5px;
     cursor: pointer;
-    box-shadow: 0 4px 24px rgba(212,242,78,0.4);
-    transition: opacity 0.15s, box-shadow 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 6px 28px rgba(212,242,78,0.35);
+    transition: opacity 0.15s;
     z-index: 20;
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
   }
-  .fab:active { opacity: 0.85; box-shadow: 0 2px 10px rgba(212,242,78,0.2); }
+  .fab:active { opacity: 0.85; }
 
-  /* Modal */
   .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.75);
     z-index: 30;
     align-items: flex-end;
-    justify-content: center;
     backdrop-filter: blur(4px);
   }
   .modal-overlay.open { display: flex; }
@@ -281,105 +264,103 @@
   .modal {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 20px 20px 0 0;
-    padding: 24px 20px 36px;
+    border-radius: 24px 24px 0 0;
+    padding: 0 20px 36px;
     width: 100%;
-    max-width: 480px;
-    animation: slideUp 0.25s ease;
+    animation: slideUp 0.22s ease;
   }
   @keyframes slideUp {
-    from { transform: translateY(60px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { transform: translateY(50px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-handle {
+    width: 40px; height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 16px auto 20px;
   }
 
   .modal h2 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 18px;
-    margin-bottom: 18px;
+    font-size: 20px;
     color: var(--accent);
+    margin-bottom: 20px;
   }
 
-  .field {
-    margin-bottom: 14px;
-  }
+  .field { margin-bottom: 16px; }
   .field label {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted);
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
   }
   .field input {
     width: 100%;
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--border);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
     outline: none;
     transition: border-color 0.15s;
   }
   .field input:focus { border-color: var(--accent); }
 
-  .modal-btns {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-  }
+  .modal-btns { display: flex; gap: 12px; margin-top: 24px; }
   .btn-cancel, .btn-save {
     flex: 1;
-    padding: 13px;
-    border-radius: 10px;
+    padding: 16px;
+    border-radius: 14px;
     font-family: 'DM Mono', monospace;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: all 0.15s;
   }
-  .btn-cancel { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
-  .btn-save { background: var(--accent); color: #0f0f11; }
+  .btn-cancel { background: var(--bg); color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-save   { background: var(--accent); color: #0f0f11; }
   .btn-save:active { opacity: 0.85; }
-
-  .modal-handle {
-    width: 36px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 0 auto 20px;
-  }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-top">
+  <div class="header-row1">
     <h1>📦 Commandes</h1>
-    <div style="display:flex;gap:8px;align-items:center;">
     <button class="btn-csv" onclick="exportCSV()">⬇ CSV</button>
-    <div class="stats">
-      <div class="stat">Total <span id="statTotal">0</span></div>
-      <div class="stat">Payé <span id="statPaye">0</span></div>
-      <div class="stat">En attente <span id="statAttente">0</span></div>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-val" id="statTotal">0</span>
+      <span class="stat-label">Total</span>
     </div>
+    <div class="stat">
+      <span class="stat-val" id="statPaye">0</span>
+      <span class="stat-label">Payées</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="statAttente">0</span>
+      <span class="stat-label">En attente</span>
     </div>
   </div>
   <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('all', this)">Tout</button>
-    <button class="filter-btn" onclick="setFilter('nofacture', this)">Sans facture</button>
-    <button class="filter-btn" onclick="setFilter('nonpaye', this)">Non payé</button>
-    <button class="filter-btn" onclick="setFilter('nonlivre', this)">Non livré</button>
-    <button class="filter-btn" onclick="setFilter('done', this)">Terminé</button>
+    <button class="filter-btn active" onclick="setFilter('all',this)">Tout</button>
+    <button class="filter-btn" onclick="setFilter('nofacture',this)">Sans facture</button>
+    <button class="filter-btn" onclick="setFilter('nonpaye',this)">Non payé</button>
+    <button class="filter-btn" onclick="setFilter('nonlivre',this)">Non livré</button>
+    <button class="filter-btn" onclick="setFilter('done',this)">Terminé ✓</button>
   </div>
 </header>
 
 <div class="list" id="list"></div>
 
-<button class="fab" onclick="openModal()">+ Nouvelle commande</button>
+<button class="fab" onclick="openModal()">＋ Nouvelle commande</button>
 
 <div class="modal-overlay" id="overlay" onclick="closeModal(event)">
   <div class="modal">
@@ -387,15 +368,15 @@
     <h2 id="modalTitle">Nouvelle commande</h2>
     <div class="field">
       <label>Fournisseur / Nom</label>
-      <input type="text" id="fNom" placeholder="Ex: Fournisseur Dupont" />
+      <input type="text" id="fNom" placeholder="Ex : Dupont Fournitures" autocomplete="off" />
     </div>
     <div class="field">
       <label>N° de commande</label>
-      <input type="text" id="fRef" placeholder="Ex: CMD-2024-001" />
+      <input type="text" id="fRef" placeholder="Ex : CMD-2024-001" autocomplete="off" />
     </div>
     <div class="field">
       <label>Montant (€)</label>
-      <input type="number" id="fMontant" placeholder="0.00" step="0.01" />
+      <input type="number" id="fMontant" placeholder="0,00" step="0.01" inputmode="decimal" />
     </div>
     <div class="field">
       <label>Date</label>
@@ -413,13 +394,8 @@ let commandes = JSON.parse(localStorage.getItem('commandes') || '[]');
 let editId = null;
 let currentFilter = 'all';
 
-function save() {
-  localStorage.setItem('commandes', JSON.stringify(commandes));
-}
-
-function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
+function save() { localStorage.setItem('commandes', JSON.stringify(commandes)); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 function setFilter(f, btn) {
   currentFilter = f;
@@ -430,11 +406,11 @@ function setFilter(f, btn) {
 
 function filtered() {
   return commandes.filter(c => {
-    if (currentFilter === 'all') return true;
+    if (currentFilter === 'all')       return true;
     if (currentFilter === 'nofacture') return !c.facture;
-    if (currentFilter === 'nonpaye') return !c.paye;
-    if (currentFilter === 'nonlivre') return !c.livre;
-    if (currentFilter === 'done') return c.facture && c.paye && c.livre;
+    if (currentFilter === 'nonpaye')   return !c.paye;
+    if (currentFilter === 'nonlivre')  return !c.livre;
+    if (currentFilter === 'done')      return c.facture && c.paye && c.livre;
     return true;
   }).sort((a, b) => b.id.localeCompare(a.id));
 }
@@ -443,54 +419,57 @@ function toggleBadge(id, field) {
   const c = commandes.find(x => x.id === id);
   if (!c) return;
   c[field] = !c[field];
-  save();
-  render();
+  save(); render();
 }
 
 function render() {
   const list = document.getElementById('list');
   const data = filtered();
 
-  // Stats
-  document.getElementById('statTotal').textContent = commandes.length;
-  document.getElementById('statPaye').textContent = commandes.filter(c => c.paye).length;
+  document.getElementById('statTotal').textContent   = commandes.length;
+  document.getElementById('statPaye').textContent    = commandes.filter(c => c.paye).length;
   document.getElementById('statAttente').textContent = commandes.filter(c => !c.paye).length;
 
-  if (data.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div>Aucune commande${currentFilter !== 'all' ? ' dans ce filtre' : ''}<br><small style="margin-top:6px;display:block">Appuie sur + pour en ajouter une</small></div>`;
+  if (!data.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div>Aucune commande${currentFilter !== 'all' ? ' dans ce filtre' : ''}<br>Appuie sur le bouton en bas pour commencer</div>`;
     return;
   }
 
   list.innerHTML = data.map(c => {
-    const allDone = c.facture && c.paye && c.livre;
-    const partial = c.facture || c.paye || c.livre;
-    const cardClass = allDone ? 'all-done' : (partial ? 'partial' : '');
-    const dateStr = c.date ? new Date(c.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'}) : '';
-    const montantStr = c.montant ? parseFloat(c.montant).toLocaleString('fr-FR', {minimumFractionDigits:2}) + ' €' : '';
-
+    const allDone    = c.facture && c.paye && c.livre;
+    const partial    = c.facture || c.paye || c.livre;
+    const cardClass  = allDone ? 'all-done' : (partial ? 'partial' : '');
+    const dateStr    = c.date ? new Date(c.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'}) : '';
+    const montantStr = c.montant ? parseFloat(c.montant).toLocaleString('fr-FR',{minimumFractionDigits:2}) + ' €' : '';
     return `
     <div class="card ${cardClass}">
-      <div class="card-top">
-        <div>
-          <div class="card-name">${escHtml(c.nom || '—')}</div>
-          <div class="card-meta">${c.ref ? '#' + escHtml(c.ref) : ''}${c.ref && dateStr ? ' · ' : ''}${dateStr}</div>
+      <div class="card-stripe"></div>
+      <div class="card-body">
+        <div class="card-top">
+          <div>
+            <div class="card-name">${escHtml(c.nom||'—')}</div>
+            <div class="card-meta">${c.ref?'#'+escHtml(c.ref):''}${c.ref&&dateStr?' · ':''}${dateStr}</div>
+          </div>
+          ${montantStr?`<div class="card-amount">${montantStr}</div>`:''}
         </div>
-        ${montantStr ? `<div class="card-amount">${montantStr}</div>` : ''}
-      </div>
-      <div class="badges">
-        <div class="badge facture ${c.facture ? 'on' : ''}" onclick="toggleBadge('${c.id}','facture')">
-          <div class="badge-dot"></div> Facture
-        </div>
-        <div class="badge paye ${c.paye ? 'on' : ''}" onclick="toggleBadge('${c.id}','paye')">
-          <div class="badge-dot"></div> Payé
-        </div>
-        <div class="badge livre ${c.livre ? 'on' : ''}" onclick="toggleBadge('${c.id}','livre')">
-          <div class="badge-dot"></div> Livré
+        <div class="badges">
+          <div class="badge facture ${c.facture?'on':''}" onclick="toggleBadge('${c.id}','facture')">
+            <span class="badge-icon">${c.facture?'✅':'🧾'}</span>
+            <span class="badge-label">Facture</span>
+          </div>
+          <div class="badge paye ${c.paye?'on':''}" onclick="toggleBadge('${c.id}','paye')">
+            <span class="badge-icon">${c.paye?'✅':'💳'}</span>
+            <span class="badge-label">Payé</span>
+          </div>
+          <div class="badge livre ${c.livre?'on':''}" onclick="toggleBadge('${c.id}','livre')">
+            <span class="badge-icon">${c.livre?'✅':'📦'}</span>
+            <span class="badge-label">Livré</span>
+          </div>
         </div>
       </div>
       <div class="card-actions">
         <button class="btn-edit" onclick="openModal('${c.id}')">✏️ Modifier</button>
-        <button class="btn-delete" onclick="deleteCommande('${c.id}')">Supprimer</button>
+        <button class="btn-delete" onclick="deleteCommande('${c.id}')">🗑 Supprimer</button>
       </div>
     </div>`;
   }).join('');
@@ -502,24 +481,20 @@ function escHtml(s) {
 
 function openModal(id) {
   editId = id || null;
-  const modal = document.getElementById('overlay');
-  document.getElementById('modalTitle').textContent = id ? 'Modifier la commande' : 'Nouvelle commande';
-
+  document.getElementById('modalTitle').textContent = id ? 'Modifier' : 'Nouvelle commande';
   if (id) {
     const c = commandes.find(x => x.id === id);
-    document.getElementById('fNom').value = c.nom || '';
-    document.getElementById('fRef').value = c.ref || '';
-    document.getElementById('fMontant').value = c.montant || '';
-    document.getElementById('fDate').value = c.date || '';
+    document.getElementById('fNom').value     = c.nom||'';
+    document.getElementById('fRef').value     = c.ref||'';
+    document.getElementById('fMontant').value = c.montant||'';
+    document.getElementById('fDate').value    = c.date||'';
   } else {
-    document.getElementById('fNom').value = '';
-    document.getElementById('fRef').value = '';
+    document.getElementById('fNom').value     = '';
+    document.getElementById('fRef').value     = '';
     document.getElementById('fMontant').value = '';
-    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fDate').value    = new Date().toISOString().split('T')[0];
   }
-
-  modal.classList.add('open');
-  setTimeout(() => document.getElementById('fNom').focus(), 300);
+  document.getElementById('overlay').classList.add('open');
 }
 
 function closeModal(e) {
@@ -532,74 +507,51 @@ function closeModal(e) {
 function saveCommande() {
   const nom = document.getElementById('fNom').value.trim();
   if (!nom) { document.getElementById('fNom').focus(); return; }
-
   if (editId) {
     const c = commandes.find(x => x.id === editId);
-    c.nom = nom;
-    c.ref = document.getElementById('fRef').value.trim();
+    c.nom = nom; c.ref = document.getElementById('fRef').value.trim();
     c.montant = document.getElementById('fMontant').value;
     c.date = document.getElementById('fDate').value;
   } else {
     commandes.push({
-      id: genId(),
-      nom,
+      id: genId(), nom,
       ref: document.getElementById('fRef').value.trim(),
       montant: document.getElementById('fMontant').value,
       date: document.getElementById('fDate').value,
-      facture: false,
-      paye: false,
-      livre: false
+      facture: false, paye: false, livre: false
     });
   }
-
-  save();
-  closeModal();
-  render();
+  save(); closeModal(); render();
 }
 
 function deleteCommande(id) {
   if (!confirm('Supprimer cette commande ?')) return;
   commandes = commandes.filter(c => c.id !== id);
-  save();
-  render();
+  save(); render();
 }
 
 function exportCSV() {
-  if (commandes.length === 0) { alert('Aucune commande à exporter.'); return; }
+  if (!commandes.length) { alert('Aucune commande à exporter.'); return; }
   const sep = ';';
-  const header = ['Date', 'Fournisseur', 'N° commande', 'Montant (€)', 'Facture', 'Payé', 'Livré'].join(sep);
-  const rows = commandes
-    .slice()
-    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-    .map(c => [
-      c.date || '',
-      '"' + (c.nom || '').replace(/"/g, '""') + '"',
-      '"' + (c.ref || '').replace(/"/g, '""') + '"',
-      c.montant ? String(c.montant).replace('.', ',') : '',
-      c.facture ? 'Oui' : 'Non',
-      c.paye    ? 'Oui' : 'Non',
-      c.livre   ? 'Oui' : 'Non'
-    ].join(sep));
-
-  const csv = '\uFEFF' + header + '\n' + rows.join('\n'); // BOM pour Excel
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const header = ['Date','Fournisseur','N° commande','Montant (€)','Facture','Payé','Livré'].join(sep);
+  const rows = commandes.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(c=>[
+    c.date||'',
+    '"'+(c.nom||'').replace(/"/g,'""')+'"',
+    '"'+(c.ref||'').replace(/"/g,'""')+'"',
+    c.montant?String(c.montant).replace('.',','):'',
+    c.facture?'Oui':'Non', c.paye?'Oui':'Non', c.livre?'Oui':'Non'
+  ].join(sep));
+  const csv = '\uFEFF'+header+'\n'+rows.join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const date = new Date().toISOString().split('T')[0];
-  a.href = url;
-  a.download = `commandes_${date}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  a.href=url; a.download=`commandes_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(url);
 }
 
-// Init date par défaut
 document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
 render();
-
-// Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 </script>
 </body>
 </html>

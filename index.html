@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Suivi Commandes</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#d4f24e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Commandes">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f11;
+    --surface: #18181c;
+    --border: #2a2a30;
+    --accent: #d4f24e;
+    --accent2: #4ef2a0;
+    --accent3: #f24e7a;
+    --text: #e8e8ec;
+    --muted: #6b6b7a;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+
+  .stats {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  .stat span { color: var(--text); font-weight: 500; }
+
+  .filters {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0f0f11;
+    font-weight: 500;
+  }
+
+  .list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .card.all-done::before { background: var(--accent2); }
+  .card.partial::before { background: var(--accent); }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .card-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    flex: 1;
+    padding-right: 8px;
+  }
+
+  .card-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .card-amount {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .badge.on {
+    border-color: currentColor;
+  }
+  .badge.on.facture { color: #7eb8f7; background: rgba(126,184,247,0.08); }
+  .badge.on.paye    { color: var(--accent2); background: rgba(78,242,160,0.08); }
+  .badge.on.livre   { color: var(--accent); background: rgba(212,242,78,0.08); }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .badge.on .badge-dot { opacity: 1; }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-edit, .btn-delete {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-edit { background: var(--bg); color: var(--muted); }
+  .btn-edit:active { color: var(--text); }
+  .btn-delete { background: var(--bg); color: var(--accent3); border-color: rgba(242,78,122,0.3); margin-left: auto; }
+  .btn-delete:active { background: rgba(242,78,122,0.1); }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 48px 16px;
+    font-size: 13px;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* FAB */
+  .btn-csv {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-csv:active { background: rgba(212,242,78,0.08); }
+
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    background: var(--accent);
+    color: #0f0f11;
+    border: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(212,242,78,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    z-index: 20;
+  }
+  .fab:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(212,242,78,0.2); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 30;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 36px;
+    width: 100%;
+    max-width: 480px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 18px;
+    color: var(--accent);
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn-cancel, .btn-save {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-cancel { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+  .btn-save { background: var(--accent); color: #0f0f11; }
+  .btn-save:active { opacity: 0.85; }
+
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>📦 Commandes</h1>
+    <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn-csv" onclick="exportCSV()">⬇ CSV</button>
+    <div class="stats">
+      <div class="stat">Total <span id="statTotal">0</span></div>
+      <div class="stat">Payé <span id="statPaye">0</span></div>
+      <div class="stat">En attente <span id="statAttente">0</span></div>
+    </div>
+    </div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">Tout</button>
+    <button class="filter-btn" onclick="setFilter('nofacture', this)">Sans facture</button>
+    <button class="filter-btn" onclick="setFilter('nonpaye', this)">Non payé</button>
+    <button class="filter-btn" onclick="setFilter('nonlivre', this)">Non livré</button>
+    <button class="filter-btn" onclick="setFilter('done', this)">Terminé</button>
+  </div>
+</header>
+
+<div class="list" id="list"></div>
+
+<button class="fab" onclick="openModal()">+</button>
+
+<div class="modal-overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modalTitle">Nouvelle commande</h2>
+    <div class="field">
+      <label>Fournisseur / Nom</label>
+      <input type="text" id="fNom" placeholder="Ex: Fournisseur Dupont" />
+    </div>
+    <div class="field">
+      <label>N° de commande</label>
+      <input type="text" id="fRef" placeholder="Ex: CMD-2024-001" />
+    </div>
+    <div class="field">
+      <label>Montant (€)</label>
+      <input type="number" id="fMontant" placeholder="0.00" step="0.01" />
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="fDate" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveCommande()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let commandes = JSON.parse(localStorage.getItem('commandes') || '[]');
+let editId = null;
+let currentFilter = 'all';
+
+function save() {
+  localStorage.setItem('commandes', JSON.stringify(commandes));
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function filtered() {
+  return commandes.filter(c => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'nofacture') return !c.facture;
+    if (currentFilter === 'nonpaye') return !c.paye;
+    if (currentFilter === 'nonlivre') return !c.livre;
+    if (currentFilter === 'done') return c.facture && c.paye && c.livre;
+    return true;
+  }).sort((a, b) => b.id.localeCompare(a.id));
+}
+
+function toggleBadge(id, field) {
+  const c = commandes.find(x => x.id === id);
+  if (!c) return;
+  c[field] = !c[field];
+  save();
+  render();
+}
+
+function render() {
+  const list = document.getElementById('list');
+  const data = filtered();
+
+  // Stats
+  document.getElementById('statTotal').textContent = commandes.length;
+  document.getElementById('statPaye').textContent = commandes.filter(c => c.paye).length;
+  document.getElementById('statAttente').textContent = commandes.filter(c => !c.paye).length;
+
+  if (data.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div>Aucune commande${currentFilter !== 'all' ? ' dans ce filtre' : ''}<br><small style="margin-top:6px;display:block">Appuie sur + pour en ajouter une</small></div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(c => {
+    const allDone = c.facture && c.paye && c.livre;
+    const partial = c.facture || c.paye || c.livre;
+    const cardClass = allDone ? 'all-done' : (partial ? 'partial' : '');
+    const dateStr = c.date ? new Date(c.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'short',year:'numeric'}) : '';
+    const montantStr = c.montant ? parseFloat(c.montant).toLocaleString('fr-FR', {minimumFractionDigits:2}) + ' €' : '';
+
+    return `
+    <div class="card ${cardClass}">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${escHtml(c.nom || '—')}</div>
+          <div class="card-meta">${c.ref ? '#' + escHtml(c.ref) : ''}${c.ref && dateStr ? ' · ' : ''}${dateStr}</div>
+        </div>
+        ${montantStr ? `<div class="card-amount">${montantStr}</div>` : ''}
+      </div>
+      <div class="badges">
+        <div class="badge facture ${c.facture ? 'on' : ''}" onclick="toggleBadge('${c.id}','facture')">
+          <div class="badge-dot"></div> Facture
+        </div>
+        <div class="badge paye ${c.paye ? 'on' : ''}" onclick="toggleBadge('${c.id}','paye')">
+          <div class="badge-dot"></div> Payé
+        </div>
+        <div class="badge livre ${c.livre ? 'on' : ''}" onclick="toggleBadge('${c.id}','livre')">
+          <div class="badge-dot"></div> Livré
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-edit" onclick="openModal('${c.id}')">✏️ Modifier</button>
+        <button class="btn-delete" onclick="deleteCommande('${c.id}')">Supprimer</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openModal(id) {
+  editId = id || null;
+  const modal = document.getElementById('overlay');
+  document.getElementById('modalTitle').textContent = id ? 'Modifier la commande' : 'Nouvelle commande';
+
+  if (id) {
+    const c = commandes.find(x => x.id === id);
+    document.getElementById('fNom').value = c.nom || '';
+    document.getElementById('fRef').value = c.ref || '';
+    document.getElementById('fMontant').value = c.montant || '';
+    document.getElementById('fDate').value = c.date || '';
+  } else {
+    document.getElementById('fNom').value = '';
+    document.getElementById('fRef').value = '';
+    document.getElementById('fMontant').value = '';
+    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+  }
+
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('fNom').focus(), 300);
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('open');
+    editId = null;
+  }
+}
+
+function saveCommande() {
+  const nom = document.getElementById('fNom').value.trim();
+  if (!nom) { document.getElementById('fNom').focus(); return; }
+
+  if (editId) {
+    const c = commandes.find(x => x.id === editId);
+    c.nom = nom;
+    c.ref = document.getElementById('fRef').value.trim();
+    c.montant = document.getElementById('fMontant').value;
+    c.date = document.getElementById('fDate').value;
+  } else {
+    commandes.push({
+      id: genId(),
+      nom,
+      ref: document.getElementById('fRef').value.trim(),
+      montant: document.getElementById('fMontant').value,
+      date: document.getElementById('fDate').value,
+      facture: false,
+      paye: false,
+      livre: false
+    });
+  }
+
+  save();
+  closeModal();
+  render();
+}
+
+function deleteCommande(id) {
+  if (!confirm('Supprimer cette commande ?')) return;
+  commandes = commandes.filter(c => c.id !== id);
+  save();
+  render();
+}
+
+function exportCSV() {
+  if (commandes.length === 0) { alert('Aucune commande à exporter.'); return; }
+  const sep = ';';
+  const header = ['Date', 'Fournisseur', 'N° commande', 'Montant (€)', 'Facture', 'Payé', 'Livré'].join(sep);
+  const rows = commandes
+    .slice()
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+    .map(c => [
+      c.date || '',
+      '"' + (c.nom || '').replace(/"/g, '""') + '"',
+      '"' + (c.ref || '').replace(/"/g, '""') + '"',
+      c.montant ? String(c.montant).replace('.', ',') : '',
+      c.facture ? 'Oui' : 'Non',
+      c.paye    ? 'Oui' : 'Non',
+      c.livre   ? 'Oui' : 'Non'
+    ].join(sep));
+
+  const csv = '\uFEFF' + header + '\n' + rows.join('\n'); // BOM pour Excel
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `commandes_${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Init date par défaut
+document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+render();
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
